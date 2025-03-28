@@ -2,7 +2,12 @@
 import React from 'react';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { DropletIcon, Thermometer, Activity, Waves } from "lucide-react";
-import { Progress } from "@/components/ui/progress";
+import { 
+  ChartContainer, 
+  ChartTooltip, 
+  ChartTooltipContent 
+} from "@/components/ui/chart";
+import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 
 interface SensorCardProps {
   title: string;
@@ -31,16 +36,16 @@ const SensorCard: React.FC<SensorCardProps> = ({ title, value, unit, type, data 
   const getStatusColor = () => {
     switch (type) {
       case 'temperature':
-        return Number(value) > 35 ? 'bg-amazon-orange' : 'bg-amazon-green';
+        return Number(value) > 35 ? '#FF8F00' : '#1B5E20';
       case 'ph':
         const phValue = Number(value);
-        return phValue < 6 || phValue > 8 ? 'bg-amazon-orange' : 'bg-amazon-green';
+        return phValue < 6 || phValue > 8 ? '#FF8F00' : '#1B5E20';
       case 'turbidity':
-        return Number(value) > 2 ? 'bg-amazon-orange' : 'bg-amazon-green';
+        return Number(value) > 2 ? '#FF8F00' : '#1B5E20';
       case 'waterLevel':
-        return Number(value) > 70 ? 'bg-amazon-orange' : 'bg-amazon-green';
+        return Number(value) > 70 ? '#FF8F00' : '#1B5E20';
       default:
-        return 'bg-amazon-green';
+        return '#1B5E20';
     }
   };
 
@@ -59,6 +64,18 @@ const SensorCard: React.FC<SensorCardProps> = ({ title, value, unit, type, data 
     }
   };
 
+  // Convert the data array to a format suitable for the pie chart
+  const pieData = [
+    { name: 'Value', value: getProgressValue() },
+    { name: 'Remaining', value: 100 - getProgressValue() }
+  ];
+
+  // Create data for the small circular indicators
+  const circleData = data.map(value => ({
+    name: '',
+    value
+  }));
+
   return (
     <Card className="sensor-card">
       <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -72,20 +89,70 @@ const SensorCard: React.FC<SensorCardProps> = ({ title, value, unit, type, data 
           {value}
           <span className="text-sm text-muted-foreground ml-1">{unit}</span>
         </div>
-        <Progress 
-          value={getProgressValue()} 
-          className="h-2 mt-2"
-          indicatorClassName={getStatusColor()}
-        />
+        
+        <div className="w-full h-24 mt-2">
+          <ChartContainer
+            config={{
+              value: {
+                theme: {
+                  light: getStatusColor(),
+                  dark: getStatusColor()
+                }
+              },
+              remaining: {
+                theme: {
+                  light: '#e5e7eb',
+                  dark: '#374151'
+                }
+              }
+            }}
+          >
+            <PieChart>
+              <Pie
+                data={pieData}
+                cx="50%"
+                cy="50%"
+                innerRadius={30}
+                outerRadius={40}
+                startAngle={90}
+                endAngle={-270}
+                paddingAngle={0}
+                dataKey="value"
+              >
+                {pieData.map((entry, index) => (
+                  <Cell 
+                    key={`cell-${index}`} 
+                    fill={index === 0 ? 'var(--color-value)' : 'var(--color-remaining)'} 
+                  />
+                ))}
+              </Pie>
+              <ChartTooltip 
+                content={<ChartTooltipContent />} 
+              />
+            </PieChart>
+          </ChartContainer>
+        </div>
       </CardContent>
       <CardFooter className="pt-0">
         <div className="flex w-full justify-between items-center h-10">
-          {data.map((item, index) => (
+          {circleData.map((item, index) => (
             <div 
               key={index} 
-              className={`w-1 rounded-full transition-all ${getStatusColor()}`}
-              style={{ height: `${item}%`, opacity: 0.7 + (index * 0.05) }}
-            />
+              className="relative"
+            >
+              <div 
+                className="w-5 h-5 rounded-full border-2"
+                style={{ 
+                  borderColor: getStatusColor(),
+                  opacity: 0.7 + (index * 0.05),
+                  background: `conic-gradient(${getStatusColor()} ${item.value}%, transparent 0)`
+                }}
+              />
+              <div 
+                className="absolute top-0 left-0 w-5 h-5 rounded-full bg-white"
+                style={{ transform: 'scale(0.7)' }}
+              />
+            </div>
           ))}
         </div>
       </CardFooter>
