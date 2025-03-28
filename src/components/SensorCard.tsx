@@ -97,6 +97,7 @@ const SensorCard: React.FC<SensorCardProps> = ({ title, value, unit, type, data 
                 }
               }}
             >
+              {/* Wrap the PieChart in a single React element */}
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
@@ -122,16 +123,16 @@ const SensorCard: React.FC<SensorCardProps> = ({ title, value, unit, type, data 
                   />
                 </PieChart>
               </ResponsiveContainer>
-              <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <div className="text-2xl font-bold">
-                  {value}
-                  <span className="text-sm text-muted-foreground ml-1">{unit}</span>
-                </div>
-                <div className="text-sm text-muted-foreground">
-                  {Math.round(getProgressValue())}%
-                </div>
-              </div>
             </ChartContainer>
+            <div className="absolute inset-0 flex flex-col items-center justify-center">
+              <div className="text-2xl font-bold">
+                {value}
+                <span className="text-sm text-muted-foreground ml-1">{unit}</span>
+              </div>
+              <div className="text-sm text-muted-foreground">
+                {Math.round(getProgressValue())}%
+              </div>
+            </div>
           </div>
         </div>
       </CardContent>
