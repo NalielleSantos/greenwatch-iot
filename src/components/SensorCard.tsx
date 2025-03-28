@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DropletIcon, Thermometer, Activity, Waves } from "lucide-react";
 import { 
   ChartContainer, 
@@ -70,12 +70,6 @@ const SensorCard: React.FC<SensorCardProps> = ({ title, value, unit, type, data 
     { name: 'Remaining', value: 100 - getProgressValue() }
   ];
 
-  // Create data for the small circular indicators
-  const circleData = data.map(value => ({
-    name: '',
-    value
-  }));
-
   return (
     <Card className="sensor-card">
       <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -84,78 +78,63 @@ const SensorCard: React.FC<SensorCardProps> = ({ title, value, unit, type, data 
         </CardTitle>
         {getIcon()}
       </CardHeader>
-      <CardContent className="pb-2">
-        <div className="text-2xl font-bold flex items-baseline">
-          {value}
-          <span className="text-sm text-muted-foreground ml-1">{unit}</span>
-        </div>
-        
-        <div className="w-full h-24 mt-2">
-          <ChartContainer
-            config={{
-              value: {
-                theme: {
-                  light: getStatusColor(),
-                  dark: getStatusColor()
+      <CardContent>
+        <div className="flex flex-col items-center justify-center">
+          <div className="w-full h-36 relative">
+            <ChartContainer
+              config={{
+                value: {
+                  theme: {
+                    light: getStatusColor(),
+                    dark: getStatusColor()
+                  }
+                },
+                remaining: {
+                  theme: {
+                    light: '#e5e7eb',
+                    dark: '#374151'
+                  }
                 }
-              },
-              remaining: {
-                theme: {
-                  light: '#e5e7eb',
-                  dark: '#374151'
-                }
-              }
-            }}
-          >
-            <PieChart>
-              <Pie
-                data={pieData}
-                cx="50%"
-                cy="50%"
-                innerRadius={30}
-                outerRadius={40}
-                startAngle={90}
-                endAngle={-270}
-                paddingAngle={0}
-                dataKey="value"
-              >
-                {pieData.map((entry, index) => (
-                  <Cell 
-                    key={`cell-${index}`} 
-                    fill={index === 0 ? 'var(--color-value)' : 'var(--color-remaining)'} 
+              }}
+            >
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={pieData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={40}
+                    outerRadius={55}
+                    startAngle={90}
+                    endAngle={-270}
+                    paddingAngle={0}
+                    dataKey="value"
+                  >
+                    {pieData.map((entry, index) => (
+                      <Cell 
+                        key={`cell-${index}`} 
+                        fill={index === 0 ? 'var(--color-value)' : 'var(--color-remaining)'} 
+                      />
+                    ))}
+                  </Pie>
+                  <ChartTooltip 
+                    content={<ChartTooltipContent />} 
                   />
-                ))}
-              </Pie>
-              <ChartTooltip 
-                content={<ChartTooltipContent />} 
-              />
-            </PieChart>
-          </ChartContainer>
+                </PieChart>
+              </ResponsiveContainer>
+              <div className="absolute inset-0 flex flex-col items-center justify-center">
+                <div className="text-2xl font-bold">
+                  {value}
+                  <span className="text-sm text-muted-foreground ml-1">{unit}</span>
+                </div>
+                <div className="text-sm text-muted-foreground">
+                  {Math.round(getProgressValue())}%
+                </div>
+              </div>
+            </ChartContainer>
+          </div>
         </div>
       </CardContent>
-      <CardFooter className="pt-0">
-        <div className="flex w-full justify-between items-center h-10">
-          {circleData.map((item, index) => (
-            <div 
-              key={index} 
-              className="relative"
-            >
-              <div 
-                className="w-5 h-5 rounded-full border-2"
-                style={{ 
-                  borderColor: getStatusColor(),
-                  opacity: 0.7 + (index * 0.05),
-                  background: `conic-gradient(${getStatusColor()} ${item.value}%, transparent 0)`
-                }}
-              />
-              <div 
-                className="absolute top-0 left-0 w-5 h-5 rounded-full bg-white"
-                style={{ transform: 'scale(0.7)' }}
-              />
-            </div>
-          ))}
-        </div>
-      </CardFooter>
     </Card>
   );
 };
